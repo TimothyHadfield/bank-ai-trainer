@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BANK AI Trainer - Web Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 15px 30px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .tab-button:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
+
+        .button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+        }
+
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .button.danger {
+            background: #e74c3c;
+        }
+
+        .button.danger:hover {
+            background: #c0392b;
+        }
+
+        .button.success {
+            background: #27ae60;
+        }
+
+        .button.success:hover {
+            background: #229954;
+        }
+
+        .progress-container {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .log-container {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-left: 3px solid #667eea;
+            padding-left: 10px;
+        }
+
+        .game-board {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .dice-display {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .die {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .die.seven {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-color: #f5576c;
+            color: white;
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        .die.doubles {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #764ba2;
+            color: white;
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .dice-total {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-top: 10px;
+        }
+
+        .dice-total.seven {
+            color: #f5576c;
+        }
+
+        .dice-total.doubles {
+            color: #764ba2;
+        }
+
+        .score-display {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .player-score {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 150px;
+            margin: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .player-name {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .player-points {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .bank-total {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .bank-total-value {
+            font-size: 3em;
+            font-weight: bold;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .info-panel {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #2196f3;
+        }
+
+        .chart-container {
+            margin-top: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        canvas {
+            max-width: 100%;
+        }
+
+        .winner-announcement {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 20px 0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2col {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎲 BANK AI Trainer</h1>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('train')">Train AI</button>
+            <button class="tab-button" onclick="switchTab('play')">Play vs AI</button>
+            <button class="tab-button" onclick="switchTab('stats')">Statistics</button>
+            <button class="tab-button" onclick="switchTab('about')">About</button>
+        </div>
+
+        <!-- Train Tab -->
+        <div id="train-tab" class="tab-content active">
+            <div class="section">
+                <h2>Training Configuration</h2>
+
+                <div class="grid-2col">
+                    <div class="control-group">
+                        <label for="train-episodes">Training Episodes:</label>
+                        <input type="number" id="train-episodes" value="1000" min="10" max="10000" step="10">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="train-opponents">Opponent Type:</label>
+                        <select id="train-opponents">
+                            <option value="random">Random Agent</option>
+                            <option value="threshold">Threshold Agent</option>
+                            <option value="expected_value">Expected Value Agent</option>
+                            <option value="mixed" selected>Mixed Opponents</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <label for="learning-rate">Learning Rate:</label>
+                        <input type="number" id="learning-rate" value="0.1" min="0.01" max="1" step="0.01">
+                    </div>
+
+                    <div class="control-group">
+                        <label for="epsilon">Exploration Rate (Epsilon):</label>
+                        <input type="number" id="epsilon" value="0.5" min="0" max="1" step="0.05">
+                    </div>
+                </div>
+
+                <button class="button" onclick="startTraining()" id="train-btn">Start Training</button>
+                <button class="button danger" onclick="stopTraining()" id="stop-btn" disabled>Stop Training</button>
+                <button class="button success" onclick="resetAgent()">Reset Agent</button>
+                <button class="button" onclick="saveAgent()">Save Current AI</button>
+                <button class="button" onclick="loadAgent()">Load Saved AI</button>
+
+                <div class="progress-container" id="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Training Progress</h2>
+                <div class="stats-grid" id="training-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-episodes">0</div>
+                        <div class="stat-label">Episodes Completed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-winrate">0%</div>
+                        <div class="stat-label">Win Rate (Last 100)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-avgscore">0</div>
+                        <div class="stat-label">Avg Score (Last 100)</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="stat-qsize">0</div>
+                        <div class="stat-label">Q-Table Size</div>
+                    </div>
+                </div>
+
+                <div class="log-container" id="training-log">
+                    <div class="log-entry">Ready to start training...</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Saved AI Agents</h2>
+                <div id="saved-agents-list" class="info-panel">
+                    No saved agents yet. Train an AI and click "Save Current AI" to save it.
+                </div>
+            </div>
+        </div>
+
+        <!-- Play Tab -->
+        <div id="play-tab" class="tab-content">
+            <div class="section">
+                <h2>Game Setup</h2>
+
+                <div class="control-group">
+                    <label for="num-rounds">Number of Rounds:</label>
+                    <input type="number" id="num-rounds" value="10" min="1" max="20">
+                </div>
+
+                <div class="control-group">
+                    <label for="opponent-select">Play Against:</label>
+                    <select id="opponent-select">
+                        <option value="current">Current AI</option>
+                    </select>
+                </div>
+
+                <button class="button" onclick="startGame()" id="start-game-btn">Start New Game</button>
+            </div>
+
+            <div class="section" id="game-section" style="display: none;">
+                <h2>Game Board</h2>
+
+                <div class="info-panel">
+                    <strong>Round <span id="current-round">1</span> of <span id="total-rounds">10</span></strong>
+                    | Roll #<span id="roll-number">0</span>
+                    | Phase: <span id="game-phase">Safe Rolls</span>
+                </div>
+
+                <div class="bank-total">
+                    <div>Bank Total</div>
+                    <div class="bank-total-value" id="bank-total">0</div>
+                </div>
+
+                <div class="dice-display">
+                    <div class="die" id="die1">?</div>
+                    <div class="die" id="die2">?</div>
+                </div>
+                <div class="dice-total" id="dice-total"></div>
+
+                <div class="game-controls">
+                    <button class="button" onclick="rollDice()" id="roll-btn">Roll Dice</button>
+                    <button class="button success" onclick="playerBanks()" id="bank-btn" disabled>Bank Points</button>
+                </div>
+
+                <div class="score-display">
+                    <div class="player-score" style="border: 3px solid #667eea;">
+                        <div class="player-name">👤 You</div>
+                        <div class="player-points" id="player-score">0</div>
+                    </div>
+                    <div class="player-score">
+                        <div class="player-name">🤖 AI</div>
+                        <div class="player-points" id="ai-score">0</div>
+                    </div>
+                </div>
+
+                <div class="log-container" id="game-log">
+                    <div class="log-entry">Game started! Roll the dice to begin.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Tab -->
+        <div id="stats-tab" class="tab-content">
+            <div class="section">
+                <h2>Agent Statistics</h2>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-training">0</div>
+                        <div class="stat-label">Total Training Episodes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="total-games">0</div>
+                        <div class="stat-label">Total Games Played</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="overall-winrate">0%</div>
+                        <div class="stat-label">Overall Win Rate</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="states-learned">0</div>
+                        <div class="stat-label">States Learned</div>
+                    </div>
+                </div>
+
+                <div class="info-panel">
+                    <strong>💡 Agent Learning:</strong> The AI uses Q-learning to improve its strategy. It learns when to bank based on bank total, score difference, round number, and roll count. More training episodes = smarter AI!
+                </div>
+            </div>
+        </div>
+
+        <!-- About Tab -->
+        <div id="about-tab" class="tab-content">
+            <div class="section">
+                <h2>About BANK AI Trainer</h2>
+
+                <div class="info-panel">
+                    <h3>What is this?</h3>
+                    <p>This is an AI training tool for the dice game BANK. You can train a Q-learning agent to play the game intelligently, then test your skills against it!</p>
+                </div>
+
+                <div class="info-panel">
+                    <h3>How does it work?</h3>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong>Q-Learning:</strong> The AI learns by playing thousands of games and remembering which decisions lead to winning.</li>
+                        <li><strong>State Space:</strong> The AI considers bank total, score difference, round number, and roll count when deciding to bank.</li>
+                        <li><strong>Exploration:</strong> Initially, the AI tries random moves. Over time, it uses what it learned.</li>
+                        <li><strong>Reward Shaping:</strong> The AI gets rewarded for winning, banking at good times, and penalized for busting.</li>
+                    </ul>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Game Rules (BANK)</h3>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong>First 3 rolls (Safe Phase):</strong>
+                            <ul style="margin-left: 20px; margin-top: 5px;">
+                                <li>Rolling a 7: +70 bonus points</li>
+                                <li>Rolling doubles: Add face value to bank</li>
+                            </ul>
+                        </li>
+                        <li><strong>After 3 rolls (Risky Phase):</strong>
+                            <ul style="margin-left: 20px; margin-top: 5px;">
+                                <li>Rolling a 7: BUST! Lose all unbanked points</li>
+                                <li>Rolling doubles: DOUBLE the entire bank total</li>
+                            </ul>
+                        </li>
+                        <li><strong>Banking:</strong> Secure your bank total to your score (can only bank once per round)</li>
+                        <li><strong>Winning:</strong> Highest score after all rounds wins!</li>
+                    </ul>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Training Parameters Explained</h3>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li><strong>Learning Rate (Alpha):</strong>
+                            <ul style="margin-left: 20px; margin-top: 5px;">
+                                <li>Controls how quickly the AI updates its knowledge</li>
+                                <li>Range: 0.01 to 1.0 (default: 0.1)</li>
+                                <li>Higher (0.3-0.5): Faster learning, but may be unstable or forget old lessons</li>
+                                <li>Lower (0.05-0.1): Slower learning, but more stable and reliable</li>
+                                <li>💡 Tip: Start with 0.1, increase if learning is too slow</li>
+                            </ul>
+                        </li>
+                        <li><strong>Exploration Rate (Epsilon):</strong>
+                            <ul style="margin-left: 20px; margin-top: 5px;">
+                                <li>Controls how often the AI tries random moves vs. using what it learned</li>
+                                <li>Range: 0 to 1 (default: 0.3)</li>
+                                <li>Higher (0.5-0.8): More random exploration, tries new strategies</li>
+                                <li>Lower (0.1-0.3): More exploitation, uses learned strategies</li>
+                                <li>Automatically decays during training (starts high, ends low)</li>
+                                <li>💡 Tip: Start with 0.3-0.5, let it decay naturally</li>
+                            </ul>
+                        </li>
+                        <li><strong>Opponent Type:</strong>
+                            <ul style="margin-left: 20px; margin-top: 5px;">
+                                <li><strong>Random Agent:</strong> Banks randomly (30% chance each roll). Easy to beat, good for early learning.</li>
+                                <li><strong>Threshold Agent:</strong> Banks when total exceeds 150 points. Medium difficulty, teaches timing.</li>
+                                <li><strong>Expected Value Agent:</strong> Banks based on mathematical calculations. Harder opponent.</li>
+                                <li><strong>Mixed Opponents:</strong> Rotates through all types. Best for robust training!</li>
+                                <li>💡 Tip: Use "Mixed" for well-rounded AI that handles different strategies</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="info-panel">
+                    <h3>Tips for Best Results</h3>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Start with 1000 episodes to see basic learning</li>
+                        <li>Train for 5000-10000 episodes for competitive AI</li>
+                        <li>Train against mixed opponents for best results</li>
+                        <li>Save your AI at different training stages to compare!</li>
+                        <li>Watch the win rate increase as the AI learns!</li>
+                        <li>If win rate plateaus, try adjusting learning rate or training more episodes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // AI Agent implementation
+        class QLearningAgent {
+            constructor(learningRate = 0.1, discountFactor = 0.95, epsilon = 0.3) {
+                this.learningRate = learningRate;
+                this.discountFactor = discountFactor;
+                this.epsilon = epsilon;
+                this.epsilonDecay = 0.9998; // Slower decay - explore longer
+                this.epsilonMin = 0.05; // Higher minimum - always some exploration
+                this.qTable = {};
+                this.episodes = 0;
+                this.totalReward = 0;
+                this.visitCounts = {}; // Track visits for exploration bonus
+            }
+
+            discretizeState(state) {
+                // More granular bank total buckets
+                const bankBucket = state.bankTotal <= 40 ? 0 :
+                                  state.bankTotal <= 80 ? 1 :
+                                  state.bankTotal <= 120 ? 2 :
+                                  state.bankTotal <= 160 ? 3 :
+                                  state.bankTotal <= 200 ? 4 :
+                                  state.bankTotal <= 250 ? 5 : 6;
+
+                // More strategic score difference buckets
+                const diffBucket = state.scoreDiff <= -150 ? 0 :
+                                  state.scoreDiff <= -75 ? 1 :
+                                  state.scoreDiff <= -25 ? 2 :
+                                  state.scoreDiff <= 25 ? 3 :
+                                  state.scoreDiff <= 75 ? 4 :
+                                  state.scoreDiff <= 150 ? 5 : 6;
+
+                // Finer round discretization (early/mid/late game strategy)
+                const roundBucket = state.round <= 2 ? 0 :
+                                   state.round <= 5 ? 1 :
+                                   state.round <= 8 ? 2 : 3;
+
+                // More detailed roll count (risk assessment)
+                const rollBucket = state.rollCount <= 3 ? 0 :
+                                  state.rollCount === 4 ? 1 :
+                                  state.rollCount === 5 ? 2 :
+                                  state.rollCount === 6 ? 3 : 4;
+
+                const bankedBucket = Math.min(state.numBanked, 3);
+                const alreadyBanked = state.playerBanked ? 1 : 0;
+
+                return `${bankBucket},${diffBucket},${roundBucket},${rollBucket},${bankedBucket},${alreadyBanked}`;
+            }
+
+            getAction(state, training = true) {
+                // Cannot bank if already banked
+                if (state.playerBanked) return 0;
+
+                // Can bank after 3rd roll is complete (when rollCount >= 3)
+                if (state.rollCount < 3) return 0;
+
+                const stateKey = this.discretizeState(state);
+
+                if (!this.qTable[stateKey]) {
+                    this.qTable[stateKey] = [0, 0];
+                }
+
+                if (training && Math.random() < this.epsilon) {
+                    return Math.random() < 0.5 ? 0 : 1;
+                } else {
+                    return this.qTable[stateKey][0] > this.qTable[stateKey][1] ? 0 : 1;
+                }
+            }
+
+            update(state, action, reward, nextState, done) {
+                const stateKey = this.discretizeState(state);
+                const nextStateKey = this.discretizeState(nextState);
+
+                if (!this.qTable[stateKey]) this.qTable[stateKey] = [0, 0];
+                if (!this.qTable[nextStateKey]) this.qTable[nextStateKey] = [0, 0];
+
+                // Track visit counts for this state-action pair
+                const visitKey = `${stateKey}_${action}`;
+                this.visitCounts[visitKey] = (this.visitCounts[visitKey] || 0) + 1;
+
+                // Exploration bonus - encourage trying less-visited state-actions
+                const explorationBonus = 0.5 / Math.sqrt(this.visitCounts[visitKey] + 1);
+
+                const currentQ = this.qTable[stateKey][action];
+                const maxNextQ = done ? 0 : Math.max(...this.qTable[nextStateKey]);
+                const target = reward + explorationBonus + this.discountFactor * maxNextQ;
+
+                // Adaptive learning rate - learn more from new experiences
+                const adaptiveLR = this.learningRate * (1.0 + 1.0 / Math.sqrt(this.visitCounts[visitKey]));
+
+                this.qTable[stateKey][action] = currentQ + adaptiveLR * (target - currentQ);
+                this.totalReward += reward;
+            }
+
+            decayEpsilon() {
+                this.epsilon = Math.max(this.epsilonMin, this.epsilon * this.epsilonDecay);
+                this.episodes++;
+            }
+        }
+
+        // Baseline agents
+        class RandomAgent {
+            constructor(bankProbability = 0.3) {
+                this.bankProbability = bankProbability;
+            }
+
+            getAction(state) {
+                if (state.playerBanked) return 0;
+                return Math.random() < this.bankProbability ? 1 : 0;
+            }
+        }
+
+        class ThresholdAgent {
+            constructor(threshold = 150) {
+                this.threshold = threshold;
+            }
+
+            getAction(state) {
+                if (state.playerBanked) return 0;
+
+                let threshold = this.threshold;
+
+                // Adaptive threshold
+                if (state.scoreDiff < -50) threshold += 50;
+                else if (state.scoreDiff > 50) threshold -= 30;
+
+                if (state.round <= 3) threshold += 20;
+                else if (state.round >= 8) threshold -= 20;
+
+                return state.bankTotal >= threshold ? 1 : 0;
+            }
+        }
+
+        // Game engine
+        class BankGame {
+            constructor(numPlayers = 2, numRounds = 10) {
+                this.numPlayers = numPlayers;
+                this.numRounds = numRounds;
+                this.safeRolls = 3;
+                this.sevenBonus = 70;
+                this.reset();
+            }
+
+            reset() {
+                this.players = [];
+                for (let i = 0; i < this.numPlayers; i++) {
+                    this.players.push({ id: i, score: 0, banked: false, agent: null });
+                }
+                this.currentRound = 0;
+                this.rollCount = 0;
+                this.bankTotal = 0;
+                this.gameOver = false;
+            }
+
+            rollDice() {
+                return [Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1];
+            }
+
+            processRoll(die1, die2) {
+                this.rollCount++;
+                const total = die1 + die2;
+                const isDouble = die1 === die2;
+                const isSeven = total === 7;
+                const inSafePhase = this.rollCount <= this.safeRolls;
+
+                if (isSeven) {
+                    if (inSafePhase) {
+                        this.bankTotal += this.sevenBonus;
+                        return { continues: true, message: `LUCKY SEVEN! +${this.sevenBonus}`, canBank: false };
+                    } else {
+                        return { continues: false, message: 'BUSTED! All unbanked points lost.', canBank: false };
+                    }
+                }
+
+                if (isDouble) {
+                    if (inSafePhase) {
+                        this.bankTotal += total;
+                        return { continues: true, message: `Doubles! +${total}`, canBank: false };
+                    } else {
+                        const oldTotal = this.bankTotal;
+                        this.bankTotal *= 2;
+                        return { continues: true, message: `DOUBLES! Bank doubled from ${oldTotal} to ${this.bankTotal}`, canBank: true };
+                    }
+                }
+
+                this.bankTotal += total;
+                return { continues: true, message: `Added ${total}. Bank total: ${this.bankTotal}`, canBank: inSafePhase ? false : true };
+            }
+
+            canPlayerBank() {
+                // Players can bank on the 3rd roll (when rollCount >= 3)
+                return this.rollCount >= 3;
+            }
+
+            getState(playerId) {
+                const player = this.players[playerId];
+                const otherScores = this.players.filter(p => p.id !== playerId).map(p => p.score);
+                const maxOtherScore = Math.max(...otherScores, 0);
+                const numBanked = this.players.filter(p => p.banked).length;
+
+                return {
+                    playerId: playerId,
+                    playerScore: player.score,
+                    playerBanked: player.banked,
+                    bankTotal: this.bankTotal,
+                    round: this.currentRound,
+                    rollCount: this.rollCount,
+                    numBanked: numBanked,
+                    numPlayers: this.numPlayers,
+                    maxOtherScore: maxOtherScore,
+                    scoreDiff: player.score - maxOtherScore,
+                    roundsRemaining: this.numRounds - this.currentRound
+                };
+            }
+
+            playerBanks(playerId) {
+                const player = this.players[playerId];
+                if (!player.banked) {
+                    player.score += this.bankTotal;
+                    player.banked = true;
+                    return true;
+                }
+                return false;
+            }
+
+            startNewRound() {
+                this.currentRound++;
+                this.rollCount = 0;
+                this.bankTotal = 0;
+                this.players.forEach(p => p.banked = false);
+            }
+
+            allPlayersBanked() {
+                return this.players.every(p => p.banked);
+            }
+
+            getWinner() {
+                const maxScore = Math.max(...this.players.map(p => p.score));
+                return this.players.filter(p => p.score === maxScore);
+            }
+        }
+
+        // Global state
+        let agent = new QLearningAgent(0.1, 0.95, 0.3);
+        let trainingInterval = null;
+        let game = null;
+        let gameState = null;
+
+        // Training statistics
+        let trainingStats = {
+            episodesCompleted: 0,
+            recentWins: [],
+            recentScores: [],
+            totalGamesPlayed: 0,
+            totalWins: 0
+        };
+
+        // Saved agents
+        let savedAgents = [];
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            event.target.classList.add('active');
+
+            if (tabName === 'stats') {
+                updateStatsTab();
+            }
+        }
+
+        function addLog(containerId, message) {
+            const log = document.getElementById(containerId);
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+
+            // Keep only last 50 entries
+            while (log.children.length > 50) {
+                log.removeChild(log.firstChild);
+            }
+        }
+
+        function createOpponent(type) {
+            switch(type) {
+                case 'random': return new RandomAgent(0.3);
+                case 'threshold': return new ThresholdAgent(150);
+                case 'expected_value': return new ThresholdAgent(120);
+                default: return new RandomAgent(0.3);
+            }
+        }
+
+        function calculateReward(game, playerId, banked, busted) {
+            const player = game.players[playerId];
+            let reward = 0;
+
+            // Big reward/penalty at game end
+            if (game.currentRound === game.numRounds) {
+                const winners = game.getWinner();
+                if (winners.some(w => w.id === playerId)) {
+                    reward += 300; // Much bigger winning bonus
+                } else {
+                    const winnerScore = Math.max(...winners.map(w => w.score));
+                    reward -= (winnerScore - player.score) * 0.3; // Stronger penalty for losing
+                }
+            }
+
+            // Banking rewards - encourage smart, strategic banking
+            if (banked) {
+                // Strong base reward for securing points
+                reward += game.bankTotal * 0.3;
+
+                // Strategic timing bonuses (risk vs reward)
+                if (game.rollCount >= 8) reward += 25; // Very risky but smart
+                else if (game.rollCount === 7) reward += 20;
+                else if (game.rollCount === 6) reward += 15;
+                else if (game.rollCount === 5) reward += 10;
+                else if (game.rollCount === 4) reward += 5;
+                else if (game.rollCount === 3) reward += 2; // Banking early is ok but not great
+
+                // Bonus for banking good totals
+                if (game.bankTotal >= 250) reward += 20;
+                else if (game.bankTotal >= 200) reward += 15;
+                else if (game.bankTotal >= 150) reward += 10;
+                else if (game.bankTotal >= 100) reward += 5;
+
+                // Strategic context bonus - bank more when behind
+                const scoreDiff = player.score - Math.max(...game.players.filter(p => p.id !== playerId).map(p => p.score));
+                if (scoreDiff < -100 && game.bankTotal >= 150) reward += 15; // Catching up
+                if (scoreDiff > 100 && game.bankTotal >= 100) reward += 10; // Protect lead
+            }
+
+            // Severe busting penalty
+            if (busted && !banked) {
+                reward -= game.bankTotal * 0.8; // Much stronger bust penalty
+                reward -= 30; // Fixed penalty for busting
+
+                // Extra penalty for busting with a lot of points
+                if (game.bankTotal >= 200) reward -= 20;
+                else if (game.bankTotal >= 150) reward -= 15;
+            }
+
+            // Position-based rewards (encourage winning)
+            const sorted = [...game.players].sort((a, b) => b.score - a.score);
+            const rank = sorted.findIndex(p => p.id === playerId);
+            if (rank === 0) reward += 5; // Reward for leading
+            else if (rank === game.players.length - 1) reward -= 3; // Penalty for being last
+
+            return reward;
+        }
+
+        function trainEpisode(opponentType) {
+            const game = new BankGame(2, 10);
+            game.players[0].agent = agent;
+            game.players[1].agent = createOpponent(opponentType);
+
+            let lastState = null;
+            let lastAction = 0;
+
+            for (let round = 1; round <= game.numRounds; round++) {
+                game.startNewRound();
+                let roundContinues = true;
+                let roundBusted = false;
+
+                while (roundContinues && !game.allPlayersBanked()) {
+                    const stateBefore = game.getState(0);
+                    const [die1, die2] = game.rollDice();
+                    const result = game.processRoll(die1, die2);
+                    roundContinues = result.continues;
+
+                    if (!roundContinues) {
+                        roundBusted = true;
+                        // Give negative reward for busting
+                        if (lastState && !game.players[0].banked) {
+                            const reward = calculateReward(game, 0, false, true);
+                            const currentState = game.getState(0);
+                            agent.update(lastState, lastAction, reward, currentState, false);
+                        }
+                        break;
+                    }
+
+                    const stateAfter = game.getState(0);
+
+                    // Agent decision (can bank on roll 3)
+                    if (!game.players[0].banked && game.rollCount >= 3) {
+                        const action = agent.getAction(stateAfter, true);
+
+                        if (action === 1) {
+                            // Agent chose to bank
+                            game.playerBanks(0);
+                            const reward = calculateReward(game, 0, true, false);
+                            agent.update(stateAfter, action, reward, stateAfter, false);
+                            lastState = null;
+                        } else {
+                            // Agent chose to wait - store this decision
+                            lastState = stateAfter;
+                            lastAction = action;
+                        }
+                    }
+
+                    // Opponent decision (can bank on roll 3)
+                    if (!game.players[1].banked && game.rollCount >= 3) {
+                        const oppState = game.getState(1);
+                        const oppAction = game.players[1].agent.getAction(oppState);
+                        if (oppAction === 1) {
+                            game.playerBanks(1);
+                        }
+                    }
+
+                    if (game.allPlayersBanked()) break;
+                }
+
+                // End of round - give small reward/penalty based on what happened
+                if (!roundBusted && !game.players[0].banked && lastState) {
+                    // Waited too long, round ended without banking
+                    const reward = -5;
+                    const currentState = game.getState(0);
+                    agent.update(lastState, lastAction, reward, currentState, false);
+                }
+
+                lastState = null;
+            }
+
+            // Game end reward
+            game.gameOver = true;
+            const winners = game.getWinner();
+            const won = winners.some(w => w.id === 0);
+            const finalReward = calculateReward(game, 0, false, false);
+
+            // Give final game reward
+            const finalState = game.getState(0);
+            if (lastState) {
+                agent.update(lastState, lastAction, finalReward, finalState, true);
+            }
+
+            agent.decayEpsilon();
+
+            return { won, score: game.players[0].score };
+        }
+
+        function startTraining() {
+            const episodes = parseInt(document.getElementById('train-episodes').value);
+            const opponentType = document.getElementById('train-opponents').value;
+            const lr = parseFloat(document.getElementById('learning-rate').value);
+            const eps = parseFloat(document.getElementById('epsilon').value);
+
+            agent.learningRate = lr;
+            agent.epsilon = eps;
+
+            document.getElementById('train-btn').disabled = true;
+            document.getElementById('stop-btn').disabled = false;
+            document.getElementById('progress-container').style.display = 'block';
+
+            addLog('training-log', `Starting training for ${episodes} episodes...`);
+
+            let episodeCount = 0;
+            let recentWins = [];
+            let recentScores = [];
+
+            trainingInterval = setInterval(() => {
+                if (episodeCount >= episodes) {
+                    stopTraining();
+                    return;
+                }
+
+                // Determine opponent for this episode
+                let opp = opponentType;
+                if (opponentType === 'mixed') {
+                    const types = ['random', 'threshold', 'expected_value'];
+                    opp = types[episodeCount % types.length];
+                }
+
+                const result = trainEpisode(opp);
+
+                recentWins.push(result.won ? 1 : 0);
+                recentScores.push(result.score);
+                if (recentWins.length > 100) {
+                    recentWins.shift();
+                    recentScores.shift();
+                }
+
+                episodeCount++;
+                trainingStats.episodesCompleted++;
+
+                // Update UI every 10 episodes
+                if (episodeCount % 10 === 0) {
+                    const winRate = recentWins.reduce((a, b) => a + b, 0) / recentWins.length;
+                    const avgScore = recentScores.reduce((a, b) => a + b, 0) / recentScores.length;
+
+                    document.getElementById('stat-episodes').textContent = episodeCount;
+                    document.getElementById('stat-winrate').textContent = (winRate * 100).toFixed(1) + '%';
+                    document.getElementById('stat-avgscore').textContent = avgScore.toFixed(0);
+                    document.getElementById('stat-qsize').textContent = Object.keys(agent.qTable).length;
+
+                    const progress = (episodeCount / episodes) * 100;
+                    document.getElementById('progress-fill').style.width = progress + '%';
+                    document.getElementById('progress-fill').textContent = progress.toFixed(0) + '%';
+
+                    if (episodeCount % 100 === 0) {
+                        addLog('training-log', `Episode ${episodeCount}: Win Rate = ${(winRate * 100).toFixed(1)}%, Avg Score = ${avgScore.toFixed(0)}, Epsilon = ${agent.epsilon.toFixed(3)}`);
+                    }
+                }
+            }, 1);
+        }
+
+        function stopTraining() {
+            if (trainingInterval) {
+                clearInterval(trainingInterval);
+                trainingInterval = null;
+            }
+            document.getElementById('train-btn').disabled = false;
+            document.getElementById('stop-btn').disabled = true;
+            addLog('training-log', 'Training stopped.');
+        }
+
+        function resetAgent() {
+            const lr = parseFloat(document.getElementById('learning-rate').value);
+            const eps = parseFloat(document.getElementById('epsilon').value);
+            agent = new QLearningAgent(lr, 0.95, eps);
+
+            document.getElementById('stat-episodes').textContent = '0';
+            document.getElementById('stat-winrate').textContent = '0%';
+            document.getElementById('stat-avgscore').textContent = '0';
+            document.getElementById('stat-qsize').textContent = '0';
+
+            trainingStats.episodesCompleted = 0;
+
+            addLog('training-log', 'Agent reset to initial state.');
+        }
+
+        function startGame() {
+            // If there's an ongoing game that isn't finished, count it as an AI win
+            if (game && !game.gameOver && game.currentRound > 0) {
+                trainingStats.totalGamesPlayed++;
+                // AI wins by forfeit
+                addLog('game-log', '⚠️ Game forfeited. AI wins!');
+            }
+
+            const rounds = parseInt(document.getElementById('num-rounds').value);
+            game = new BankGame(2, rounds);
+            game.players[0].agent = null; // Human player
+            game.players[1].agent = getSelectedAgent();
+
+            gameState = {
+                currentPlayer: 0,
+                roundBusted: false
+            };
+
+            // Reset UI completely
+            document.getElementById('game-section').style.display = 'block';
+            document.getElementById('total-rounds').textContent = rounds;
+            document.getElementById('current-round').textContent = '1';
+            document.getElementById('player-score').textContent = '0';
+            document.getElementById('ai-score').textContent = '0';
+            document.getElementById('game-log').innerHTML = '';
+
+            // Reset dice display
+            document.getElementById('die1').textContent = '?';
+            document.getElementById('die2').textContent = '?';
+            document.getElementById('die1').className = 'die';
+            document.getElementById('die2').className = 'die';
+            document.getElementById('dice-total').textContent = '';
+            document.getElementById('dice-total').className = 'dice-total';
+
+            // Enable buttons
+            document.getElementById('roll-btn').disabled = false;
+            document.getElementById('bank-btn').disabled = true;
+
+            game.startNewRound();
+            updateGameUI();
+            addLog('game-log', 'Game started! Roll the dice to begin.');
+        }
+
+        function rollDice() {
+            if (!game || game.gameOver || game.players[0].banked) return;
+
+            const [die1, die2] = game.rollDice();
+            const result = game.processRoll(die1, die2);
+            const total = die1 + die2;
+            const isSeven = total === 7;
+            const isDouble = die1 === die2;
+            const inSafePhase = game.rollCount <= 3;
+
+            // Update dice display
+            document.getElementById('die1').textContent = die1;
+            document.getElementById('die2').textContent = die2;
+
+            // Reset dice classes
+            document.getElementById('die1').className = 'die';
+            document.getElementById('die2').className = 'die';
+            document.getElementById('dice-total').className = 'dice-total';
+
+            // Highlight special rolls
+            if (isSeven) {
+                document.getElementById('die1').classList.add('seven');
+                document.getElementById('die2').classList.add('seven');
+                document.getElementById('dice-total').classList.add('seven');
+
+                if (inSafePhase) {
+                    // Lucky seven in safe phase - show as 70 and happy
+                    document.getElementById('dice-total').textContent = `Total: 70 ⭐ LUCKY SEVEN!`;
+                } else {
+                    // Busted seven - show as sad
+                    document.getElementById('dice-total').textContent = `Total: ${total} 😢 SEVEN - BUSTED!`;
+                }
+            } else if (isDouble && !inSafePhase) {
+                // Only highlight doubles in risky phase (when they actually double)
+                document.getElementById('die1').classList.add('doubles');
+                document.getElementById('die2').classList.add('doubles');
+                document.getElementById('dice-total').classList.add('doubles');
+                document.getElementById('dice-total').textContent = `Total: ${total} 🎲 DOUBLES!`;
+            } else {
+                document.getElementById('dice-total').textContent = `Total: ${total}`;
+            }
+
+            updateGameUI();
+            addLog('game-log', `You rolled ${die1} + ${die2} = ${total}. ${result.message}`);
+
+            if (!result.continues) {
+                // Round busted
+                gameState.roundBusted = true;
+                document.getElementById('roll-btn').disabled = true;
+                document.getElementById('bank-btn').disabled = true;
+
+                addLog('game-log', '💥 Round busted! No points scored this round.');
+
+                setTimeout(() => {
+                    endRound();
+                }, 2000);
+            } else {
+                // Can bank on the 3rd roll (when rollCount >= 3)
+                const canBank = game.rollCount >= 3;
+
+                if (canBank) {
+                    document.getElementById('bank-btn').disabled = false;
+                } else {
+                    document.getElementById('bank-btn').disabled = true;
+                }
+
+                // Show message when safe rolls are complete
+                if (game.rollCount === 3) {
+                    addLog('game-log', '⚠️ Safe rolls complete! Next roll you can bank.');
+                }
+
+                // AI decides (can bank on roll 3)
+                if (!game.players[1].banked && game.rollCount >= 3) {
+                    const aiState = game.getState(1);
+                    const selectedAgent = getSelectedAgent();
+                    const aiAction = selectedAgent.getAction(aiState, false);
+
+                    if (aiAction === 1) {
+                        game.playerBanks(1);
+                        addLog('game-log', `🤖 AI banks ${game.bankTotal} points!`);
+
+                        if (game.allPlayersBanked()) {
+                            setTimeout(() => endRound(), 1500);
+                        }
+                    }
+                }
+            }
+        }
+
+        function playerBanks() {
+            if (!game || game.players[0].banked) return;
+
+            const bankedAmount = game.bankTotal;
+            game.playerBanks(0);
+            addLog('game-log', `✓ You banked ${bankedAmount} points!`);
+
+            document.getElementById('bank-btn').disabled = true;
+            document.getElementById('roll-btn').disabled = true;
+
+            updateGameUI();
+
+            // AI continues playing if not already banked
+            if (!game.players[1].banked) {
+                addLog('game-log', '🤖 AI is now playing...');
+                setTimeout(() => aiTakeTurn(), 1500);
+            } else {
+                setTimeout(() => endRound(), 1500);
+            }
+        }
+
+        function aiTakeTurn() {
+            // AI continues rolling until it decides to bank or busts
+            if (game.players[1].banked || game.gameOver) {
+                endRound();
+                return;
+            }
+
+            // Check if AI can make a decision
+            if (game.rollCount >= 3) {
+                const aiState = game.getState(1);
+                const selectedAgent = getSelectedAgent();
+                const aiAction = selectedAgent.getAction(aiState, false);
+
+                if (aiAction === 1) {
+                    // AI decides to bank
+                    const bankedAmount = game.bankTotal;
+                    game.playerBanks(1);
+                    addLog('game-log', `🤖 AI banks ${bankedAmount} points!`);
+                    updateGameUI();
+                    setTimeout(() => endRound(), 1500);
+                    return;
+                }
+            }
+
+            // AI continues rolling
+            setTimeout(() => {
+                const [die1, die2] = game.rollDice();
+                const result = game.processRoll(die1, die2);
+                const total = die1 + die2;
+                const isSeven = total === 7;
+                const isDouble = die1 === die2;
+                const inSafePhase = game.rollCount <= 3;
+
+                // Update dice display
+                document.getElementById('die1').textContent = die1;
+                document.getElementById('die2').textContent = die2;
+
+                // Reset dice classes
+                document.getElementById('die1').className = 'die';
+                document.getElementById('die2').className = 'die';
+                document.getElementById('dice-total').className = 'dice-total';
+
+                // Highlight special rolls
+                if (isSeven) {
+                    document.getElementById('die1').classList.add('seven');
+                    document.getElementById('die2').classList.add('seven');
+                    document.getElementById('dice-total').classList.add('seven');
+                    if (inSafePhase) {
+                        document.getElementById('dice-total').textContent = `Total: 70 ⭐ LUCKY SEVEN!`;
+                    } else {
+                        document.getElementById('dice-total').textContent = `Total: ${total} 😢 SEVEN - BUSTED!`;
+                    }
+                } else if (isDouble && !inSafePhase) {
+                    document.getElementById('die1').classList.add('doubles');
+                    document.getElementById('die2').classList.add('doubles');
+                    document.getElementById('dice-total').classList.add('doubles');
+                    document.getElementById('dice-total').textContent = `Total: ${total} 🎲 DOUBLES!`;
+                } else {
+                    document.getElementById('dice-total').textContent = `Total: ${total}`;
+                }
+
+                updateGameUI();
+                addLog('game-log', `🤖 AI rolled ${die1} + ${die2} = ${total}. ${result.message}`);
+
+                if (!result.continues) {
+                    // AI busted
+                    addLog('game-log', '💥 AI busted! Round over.');
+                    setTimeout(() => endRound(), 2000);
+                } else {
+                    // AI continues its turn
+                    setTimeout(() => aiTakeTurn(), 1200);
+                }
+            }, 800);
+        }
+
+        function endRound() {
+            if (game.currentRound >= game.numRounds) {
+                endGame();
+                return;
+            }
+
+            game.startNewRound();
+            gameState.roundBusted = false;
+
+            // Reset dice display
+            document.getElementById('die1').textContent = '?';
+            document.getElementById('die2').textContent = '?';
+            document.getElementById('die1').className = 'die';
+            document.getElementById('die2').className = 'die';
+            document.getElementById('dice-total').textContent = '';
+            document.getElementById('dice-total').className = 'dice-total';
+
+            document.getElementById('roll-btn').disabled = false;
+            document.getElementById('bank-btn').disabled = true;
+
+            updateGameUI();
+            addLog('game-log', `--- Round ${game.currentRound} started ---`);
+        }
+
+        function endGame() {
+            game.gameOver = true;
+            const winners = game.getWinner();
+
+            trainingStats.totalGamesPlayed++;
+            if (winners.some(w => w.id === 0)) {
+                trainingStats.totalWins++;
+            }
+
+            document.getElementById('roll-btn').disabled = true;
+            document.getElementById('bank-btn').disabled = true;
+
+            if (winners.length > 1) {
+                addLog('game-log', '🤝 GAME OVER - IT\'S A TIE!');
+            } else if (winners[0].id === 0) {
+                addLog('game-log', '🎉 GAME OVER - YOU WIN! 🎉');
+            } else {
+                addLog('game-log', '😔 GAME OVER - AI WINS!');
+            }
+
+            const logContainer = document.getElementById('game-log');
+            const winnerDiv = document.createElement('div');
+            winnerDiv.className = 'winner-announcement';
+
+            if (winners.length > 1) {
+                winnerDiv.textContent = '🤝 TIE GAME!';
+            } else if (winners[0].id === 0) {
+                winnerDiv.textContent = '🎉 YOU WIN! 🎉';
+            } else {
+                winnerDiv.textContent = '🤖 AI WINS!';
+            }
+
+            logContainer.appendChild(winnerDiv);
+        }
+
+        function updateGameUI() {
+            document.getElementById('current-round').textContent = game.currentRound;
+            document.getElementById('roll-number').textContent = game.rollCount;
+            document.getElementById('game-phase').textContent = game.rollCount <= game.safeRolls ? 'Safe Rolls' : 'Risky Rolls';
+            document.getElementById('bank-total').textContent = game.bankTotal;
+            document.getElementById('player-score').textContent = game.players[0].score;
+            document.getElementById('ai-score').textContent = game.players[1].score;
+        }
+
+        function updateStatsTab() {
+            document.getElementById('total-training').textContent = trainingStats.episodesCompleted;
+            document.getElementById('total-games').textContent = trainingStats.totalGamesPlayed;
+
+            const winRate = trainingStats.totalGamesPlayed > 0
+                ? (trainingStats.totalWins / trainingStats.totalGamesPlayed * 100).toFixed(1) + '%'
+                : '0%';
+            document.getElementById('overall-winrate').textContent = winRate;
+            document.getElementById('states-learned').textContent = Object.keys(agent.qTable).length;
+        }
+
+        function saveAgent() {
+            const timestamp = new Date().toLocaleString();
+            const agentCopy = {
+                qTable: JSON.parse(JSON.stringify(agent.qTable)),
+                learningRate: agent.learningRate,
+                discountFactor: agent.discountFactor,
+                epsilon: agent.epsilon,
+                episodes: agent.episodes,
+                timestamp: timestamp,
+                stats: {
+                    episodesCompleted: trainingStats.episodesCompleted,
+                    qTableSize: Object.keys(agent.qTable).length
+                }
+            };
+
+            savedAgents.push(agentCopy);
+
+            updateSavedAgentsList();
+            updateOpponentSelect();
+
+            addLog('training-log', `✓ AI saved! (${savedAgents.length} total saved agents)`);
+        }
+
+        function loadAgent() {
+            if (savedAgents.length === 0) {
+                addLog('training-log', '⚠️ No saved agents available.');
+                return;
+            }
+
+            const index = savedAgents.length - 1; // Load most recent
+            const savedAgent = savedAgents[index];
+
+            agent.qTable = JSON.parse(JSON.stringify(savedAgent.qTable));
+            agent.learningRate = savedAgent.learningRate;
+            agent.discountFactor = savedAgent.discountFactor;
+            agent.epsilon = savedAgent.epsilon;
+            agent.episodes = savedAgent.episodes;
+
+            addLog('training-log', `✓ AI loaded from ${savedAgent.timestamp}`);
+
+            // Update stats display
+            document.getElementById('stat-qsize').textContent = Object.keys(agent.qTable).length;
+        }
+
+        function updateSavedAgentsList() {
+            const listContainer = document.getElementById('saved-agents-list');
+
+            if (savedAgents.length === 0) {
+                listContainer.innerHTML = 'No saved agents yet. Train an AI and click "Save Current AI" to save it.';
+                return;
+            }
+
+            let html = '<div style="max-height: 300px; overflow-y: auto;">';
+
+            savedAgents.forEach((savedAgent, index) => {
+                html += `
+                    <div style="background: white; padding: 15px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>AI #${index + 1}</strong> - ${savedAgent.timestamp}<br>
+                                <small>Episodes: ${savedAgent.stats.episodesCompleted} | Q-Table Size: ${savedAgent.stats.qTableSize}</small>
+                            </div>
+                            <button class="button" onclick="loadSpecificAgent(${index})" style="margin: 0;">Load</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            listContainer.innerHTML = html;
+        }
+
+        function loadSpecificAgent(index) {
+            const savedAgent = savedAgents[index];
+
+            agent.qTable = JSON.parse(JSON.stringify(savedAgent.qTable));
+            agent.learningRate = savedAgent.learningRate;
+            agent.discountFactor = savedAgent.discountFactor;
+            agent.epsilon = savedAgent.epsilon;
+            agent.episodes = savedAgent.episodes;
+
+            addLog('training-log', `✓ Loaded AI #${index + 1} from ${savedAgent.timestamp}`);
+
+            document.getElementById('stat-qsize').textContent = Object.keys(agent.qTable).length;
+        }
+
+        function updateOpponentSelect() {
+            const select = document.getElementById('opponent-select');
+
+            // Clear existing options except "Current AI"
+            select.innerHTML = '<option value="current">Current AI</option>';
+
+            // Add saved agents
+            savedAgents.forEach((savedAgent, index) => {
+                const option = document.createElement('option');
+                option.value = `saved-${index}`;
+                option.textContent = `AI #${index + 1} (${savedAgent.stats.episodesCompleted} episodes)`;
+                select.appendChild(option);
+            });
+        }
+
+        function getSelectedAgent() {
+            const selectValue = document.getElementById('opponent-select').value;
+
+            if (selectValue === 'current') {
+                return agent;
+            } else if (selectValue.startsWith('saved-')) {
+                const index = parseInt(selectValue.split('-')[1]);
+                const savedAgent = savedAgents[index];
+
+                // Create a new agent with the saved Q-table
+                const loadedAgent = new QLearningAgent(
+                    savedAgent.learningRate,
+                    savedAgent.discountFactor,
+                    0.0 // No exploration when playing
+                );
+                loadedAgent.qTable = savedAgent.qTable;
+                loadedAgent.episodes = savedAgent.episodes;
+
+                return loadedAgent;
+            }
+
+            return agent;
+        }
+    </script>
+</body>
+</html>
