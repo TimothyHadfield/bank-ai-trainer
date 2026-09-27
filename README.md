@@ -1,11 +1,36 @@
-# BANK Game AI - Reinforcement Learning Project
+# BANK AI Trainer
 
-An AI trained to play the dice game BANK using Q-Learning and Deep Q-Networks (DQN).
+Teach an AI to play the push-your-luck dice game BANK, right in your browser, then play against it. The repo also has the full Python reinforcement-learning version for longer training runs.
 
-🔗 **Live browser trainer:** https://timothyhadfield.github.io/bank-ai-trainer/
+**[▶ Open the live trainer](https://timothyhadfield.github.io/bank-ai-trainer/)** · works on phone and laptop, no install
+
+<p align="center">
+  <img src="docs/screenshots/desktop.png" alt="The browser trainer mid-run: progress bar, episodes completed, win rate, average score and Q-table size" width="68%">
+  &nbsp;
+  <img src="docs/screenshots/phone.png" alt="Playing BANK against the AI on an iPhone: bank total, dice and the Roll and Bank buttons" width="24%">
+</p>
+
+## Features
+- **Train in the browser**: pick the number of episodes, learning rate and exploration rate, and watch a Q-learning agent improve live.
+- **Choose its sparring partners**: train against random, threshold or expected-value bots, or a mix of all three.
+- **Live progress**: episodes, win rate and average score over the last 100 games, the number of states learned, and a running log.
+- **Play vs the AI**: roll the dice yourself and decide when to bank while the trained agent makes its own calls.
+- **Save and compare agents**: keep snapshots of the AI during a session and load an earlier one back in.
+- **Python training stack**: a full game engine, baseline agents, a trainer and evaluation tools in `src/`, run from `main.py`.
+
+<p align="center">
+  <img src="docs/screenshots/play-vs-ai.png" alt="A game against the AI on a laptop, with the game log showing a lucky seven and the AI banking" width="68%">
+</p>
+
+## Built with
+Browser trainer: one plain HTML/CSS/JavaScript file on GitHub Pages. Python version: NumPy, pandas and Matplotlib/Seaborn.
+
+---
+
+## For developers
 
 The repo has two halves that can be used independently: a self-contained browser trainer
-([`index.html`](index.html) — no install, no backend) and the full Python training stack
+([`index.html`](index.html), no install, no backend) and the full Python training stack
 under [`src/`](src/) driven by [`main.py`](main.py).
 
 ## Game Rules
@@ -111,7 +136,7 @@ python main.py play --model models/best_agent.pkl
 ## Agent Types
 
 1. **QLearningAgent**: Tabular Q-learning with state discretization
-2. **DQNAgent**: Deep Q-Network for large state spaces (optional enhancement)
+2. **OpponentModelingAgent**: Q-learning that also tracks when opponents bank
 3. **RandomAgent**: Banks randomly for baseline comparison
 4. **ThresholdAgent**: Banks when BANK total exceeds threshold
 5. **ExpectedValueAgent**: Banks based on mathematical expected value
@@ -130,7 +155,6 @@ The agent observes:
 
 - **Self-play**: Agents learn by competing against copies of themselves
 - **Curriculum learning**: Gradually increase opponent difficulty
-- **Experience replay**: Store and sample past experiences (DQN variant)
 - **Opponent modeling**: Track opponent banking patterns
 - **Progressive epsilon decay**: Balance exploration and exploitation
 
@@ -219,7 +243,7 @@ A well-trained agent should:
 - [ ] Monte Carlo Tree Search (MCTS) for planning
 - [ ] Neural network function approximation
 - [ ] Tournament mode with multiple agents
-- [ ] Web-based UI for human play
+- [x] Web-based UI for human play (the browser trainer)
 - [ ] Mobile app integration
 
 ## License
