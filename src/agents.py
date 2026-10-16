@@ -13,10 +13,19 @@ import numpy as np
 from game_engine import calculate_expected_value, GamePhase
 
 
+# Module-level factories (not lambdas) so agents with defaultdicts can be pickled.
+def _zero_q_values():
+    return [0.0, 0.0]  # [wait, bank]
+
+
+def _int_defaultdict():
+    return defaultdict(int)
+
+
 class Agent:
     """Base class for all agents."""
 
-    def get_action(self, state: Dict) -> int:
+    def get_action(self, state: Dict, training: bool = True) -> int:
         """
         Decide whether to bank or wait.
 
@@ -50,7 +59,7 @@ class RandomAgent(Agent):
     def __init__(self, bank_probability: float = 0.3):
         self.bank_probability = bank_probability
 
-    def get_action(self, state: Dict) -> int:
+    def get_action(self, state: Dict, training: bool = True) -> int:
         if state['player_banked']:
             return 0  # Already banked, can't bank again
 
@@ -69,7 +78,7 @@ class ThresholdAgent(Agent):
         self.threshold = threshold
         self.adaptive = adaptive
 
-    def get_action(self, state: Dict) -> int:
+    def get_action(self, state: Dict, training: bool = True) -> int:
         if state['player_banked']:
             return 0
 
@@ -105,7 +114,7 @@ class ExpectedValueAgent(Agent):
         """
         self.risk_tolerance = risk_tolerance
 
-    def get_action(self, state: Dict) -> int:
+    def get_action(self, state: Dict, training: bool = True) -> int:
         if state['player_banked']:
             return 0
 
@@ -148,7 +157,7 @@ class QLearningAgent(Agent):
         self.epsilon_min = epsilon_min
 
         # Q-table: maps (state, action) -> Q-value
-        self.q_table = defaultdict(lambda: [0.0, 0.0])  # [wait, bank]
+        self.q_table = defaultdict(_zero_q_values)  # [wait, bank]
 
         # Track learning statistics
         self.episodes = 0
@@ -305,7 +314,7 @@ class OpponentModelingAgent(QLearningAgent):
 
         # Track opponent banking patterns
         # Format: {opponent_id: {bank_total: count}}
-        self.opponent_banking_history = defaultdict(lambda: defaultdict(int))
+        self.opponent_banking_history = defaultdict(_int_defaultdict)
         self.opponent_total_banks = defaultdict(int)
 
     def record_opponent_bank(self, opponent_id: int, bank_total: int):

@@ -223,6 +223,60 @@ def test_training_basic():
         return False
 
 
+def test_save_load():
+    """Test that trained agents can be saved and loaded (pickle)."""
+    print("\nTesting save/load...")
+
+    try:
+        import tempfile
+        from agents import Agent, QLearningAgent, OpponentModelingAgent
+
+        for cls in (QLearningAgent, OpponentModelingAgent):
+            agent = cls()
+            agent.q_table[(0, 0, 0, 0, 0, 0)][1] = 5.0
+            if isinstance(agent, OpponentModelingAgent):
+                agent.record_opponent_bank(1, 120)
+            with tempfile.TemporaryDirectory() as tmp:
+                path = os.path.join(tmp, "agent.pkl")
+                agent.save(path)
+                loaded = Agent.load(path)
+            assert loaded.q_table[(0, 0, 0, 0, 0, 0)][1] == 5.0
+            assert loaded.q_table[(9, 9, 9, 9, 9, 9)] == [0.0, 0.0]
+            print(f"  ✓ {cls.__name__} save/load")
+
+        return True
+
+    except Exception as e:
+        print(f"  ✗ Save/load failed: {e}")
+        return False
+
+
+def test_evaluation_basic():
+    """Test that evaluation runs against baseline opponents."""
+    print("\nTesting evaluation (quick run)...")
+
+    try:
+        from agents import QLearningAgent
+        from evaluation import Evaluator
+
+        evaluator = Evaluator(QLearningAgent())
+        results = evaluator.evaluate(
+            num_games=3,
+            num_players=4,
+            num_rounds=2,
+            opponent_types=['random', 'threshold', 'expected_value'],
+            verbose=False
+        )
+        assert results['num_games'] == 3
+
+        print("  ✓ Evaluation works")
+        return True
+
+    except Exception as e:
+        print(f"  ✗ Evaluation failed: {e}")
+        return False
+
+
 def main():
     """Run all tests."""
     print("="*60)
@@ -249,6 +303,12 @@ def main():
         all_passed = False
 
     if not test_training_basic():
+        all_passed = False
+
+    if not test_save_load():
+        all_passed = False
+
+    if not test_evaluation_basic():
         all_passed = False
 
     # Final result
