@@ -916,6 +916,15 @@
         // Saved agents
         let savedAgents = [];
 
+        // Game-flow timers: skip the callback if a new game started meanwhile,
+        // so the old game's AI turn / round end can't run on the new game.
+        function gameTimeout(fn, ms) {
+            const scheduledFor = game;
+            return setTimeout(() => {
+                if (game === scheduledFor) fn();
+            }, ms);
+        }
+
         function switchTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
@@ -1100,10 +1109,13 @@
         }
 
         function startTraining() {
-            const episodes = parseInt(document.getElementById('train-episodes').value);
+            let episodes = parseInt(document.getElementById('train-episodes').value);
+            if (!(episodes >= 1)) episodes = 1000; // empty/invalid input would train forever
             const opponentType = document.getElementById('train-opponents').value;
-            const lr = parseFloat(document.getElementById('learning-rate').value);
-            const eps = parseFloat(document.getElementById('epsilon').value);
+            let lr = parseFloat(document.getElementById('learning-rate').value);
+            if (isNaN(lr)) lr = 0.1; // NaN would poison every Q-value
+            let eps = parseFloat(document.getElementById('epsilon').value);
+            if (isNaN(eps)) eps = 0.5;
 
             agent.learningRate = lr;
             agent.epsilon = eps;
@@ -1143,8 +1155,8 @@
                 episodeCount++;
                 trainingStats.episodesCompleted++;
 
-                // Update UI every 10 episodes
-                if (episodeCount % 10 === 0) {
+                // Update UI every 10 episodes (and on the last one, so it ends at 100%)
+                if (episodeCount % 10 === 0 || episodeCount === episodes) {
                     const winRate = recentWins.reduce((a, b) => a + b, 0) / recentWins.length;
                     const avgScore = recentScores.reduce((a, b) => a + b, 0) / recentScores.length;
 
@@ -1175,8 +1187,10 @@
         }
 
         function resetAgent() {
-            const lr = parseFloat(document.getElementById('learning-rate').value);
-            const eps = parseFloat(document.getElementById('epsilon').value);
+            let lr = parseFloat(document.getElementById('learning-rate').value);
+            if (isNaN(lr)) lr = 0.1;
+            let eps = parseFloat(document.getElementById('epsilon').value);
+            if (isNaN(eps)) eps = 0.5;
             agent = new QLearningAgent(lr, 0.95, eps);
 
             document.getElementById('stat-episodes').textContent = '0';
@@ -1191,13 +1205,13 @@
 
         function startGame() {
             // If there's an ongoing game that isn't finished, count it as an AI win
-            if (game && !game.gameOver && game.currentRound > 0) {
+            const forfeited = game && !game.gameOver && game.currentRound > 0;
+            if (forfeited) {
                 trainingStats.totalGamesPlayed++;
-                // AI wins by forfeit
-                addLog('game-log', '⚠️ Game forfeited. AI wins!');
             }
 
-            const rounds = parseInt(document.getElementById('num-rounds').value);
+            let rounds = parseInt(document.getElementById('num-rounds').value);
+            if (!(rounds >= 1)) rounds = 10; // empty/invalid input would make the game never end
             game = new BankGame(2, rounds);
             game.players[0].agent = null; // Human player
             game.players[1].agent = getSelectedAgent();
@@ -1214,6 +1228,10 @@
             document.getElementById('player-score').textContent = '0';
             document.getElementById('ai-score').textContent = '0';
             document.getElementById('game-log').innerHTML = '';
+            if (forfeited) {
+                // AI wins by forfeit (logged after the clear so it stays visible)
+                addLog('game-log', '⚠️ Game forfeited. AI wins!');
+            }
 
             // Reset dice display
             document.getElementById('die1').textContent = '?';
@@ -1285,7 +1303,7 @@
 
                 addLog('game-log', '💥 Round busted! No points scored this round.');
 
-                setTimeout(() => {
+                gameTimeout(() => {
                     endRound();
                 }, 2000);
             } else {
@@ -1314,7 +1332,7 @@
                         addLog('game-log', `🤖 AI banks ${game.bankTotal} points!`);
 
                         if (game.allPlayersBanked()) {
-                            setTimeout(() => endRound(), 1500);
+                            gameTimeout(() => endRound(), 1500);
                         }
                     }
                 }
@@ -1336,9 +1354,9 @@
             // AI continues playing if not already banked
             if (!game.players[1].banked) {
                 addLog('game-log', '🤖 AI is now playing...');
-                setTimeout(() => aiTakeTurn(), 1500);
+                gameTimeout(() => aiTakeTurn(), 1500);
             } else {
-                setTimeout(() => endRound(), 1500);
+                gameTimeout(() => endRound(), 1500);
             }
         }
 
@@ -1361,13 +1379,13 @@
                     game.playerBanks(1);
                     addLog('game-log', `🤖 AI banks ${bankedAmount} points!`);
                     updateGameUI();
-                    setTimeout(() => endRound(), 1500);
+                    gameTimeout(() => endRound(), 1500);
                     return;
                 }
             }
 
             // AI continues rolling
-            setTimeout(() => {
+            gameTimeout(() => {
                 const [die1, die2] = game.rollDice();
                 const result = game.processRoll(die1, die2);
                 const total = die1 + die2;
@@ -1409,10 +1427,10 @@
                 if (!result.continues) {
                     // AI busted
                     addLog('game-log', '💥 AI busted! Round over.');
-                    setTimeout(() => endRound(), 2000);
+                    gameTimeout(() => endRound(), 2000);
                 } else {
                     // AI continues its turn
-                    setTimeout(() => aiTakeTurn(), 1200);
+                    gameTimeout(() => aiTakeTurn(), 1200);
                 }
             }, 800);
         }
