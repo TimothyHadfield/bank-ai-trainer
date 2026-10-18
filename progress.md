@@ -13,6 +13,7 @@ None set by Tim. The project works: live browser trainer plus a local Python tra
 | Python stack (`main.py`, `src/`) | Works since 2026-10-16 (train, evaluate, save/load were crashing before). |
 | Tests | `python test_installation.py` (Python only). Browser checked with phone-view scripts. |
 | Handoff files | `CLAUDE.md` + this file, created 2026-10-16 by the project sweep. |
+| Site icon (2026-10-17) | `icon.svg` (white die on the purple gradient) + `apple-touch-icon.png` 180 px, linked in `index.html`; replaced the empty favicon. |
 
 ## Authorized next steps
 None.
